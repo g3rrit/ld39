@@ -1,0 +1,188 @@
+include"SDL2/SDL"
+include"SDL2/SDL_image"
+
+main : () -> int 
+{
+    gameContainer.start();
+
+    return 0;
+}
+
+GameContainer : struct
+{
+    start : () -> void 
+    {
+        if(SDL_Init(SDL_INIT_VIDEO) != 0)
+        {
+            printf("error initing sdl\n");
+        }
+        printf("sdl inited\n");
+
+        window.init();
+
+        tex : SDL_Texture* = loadTexture("/../res/char/Sprite.bmp");
+
+        //main loop
+        event : SDL_Event;
+        quit : bool = false;
+ 
+        //TODO check if this works
+        currentTime : struct timeval;
+        gettimeofday(&currentTime,null);
+ 
+        lastTime : f64 = (currentTime.tv_sec * 1000000 + currentTime.tv_usec) / 1000000;
+        firstTime : f64 = 0;
+        passedTime : f64 = 0;
+        unprocessedTime : f64 = 0;
+        frameTime : f64 = 0;
+        frames : int = 0;
+        render : bool = true;
+ 
+        frameCap : f64 = 1.0 / 30.0;
+        FPS : int = 0;
+ 
+        while(!quit)
+        {
+            
+            while(SDL_PollEvent(&event))
+            {
+                if(event.type == SDL_QUIT)
+                {
+                    quit = true;
+                }
+                else if(event.type == SDL_KEYDOWN)
+                {
+                    quit = true;
+                }
+                else if(event.type == SDL_MOUSEBUTTONDOWN)
+                {
+                    quit = true;
+                }
+            } 
+            
+            gettimeofday(&currentTime,null);
+            firstTime = (currentTime.tv_sec * 1000000 + currentTime.tv_usec) / 1000000;
+            //printf("time = %f \n", firstTime);
+            passedTime = firstTime - lastTime;
+            lastTime = firstTime;
+  
+            unprocessedTime = unprocessedTime + passedTime;
+            frameTime = frameTime + passedTime;
+  
+            //printf("unprocessed : %f , framecap : %f fps : %i \n", unprocessedTime, frameCap, FPS);
+ 
+            while(unprocessedTime >= frameCap)
+            {
+                //printf("whut \n");
+                gameContainer.update((f32)frameCap);
+                unprocessedTime = unprocessedTime - frameCap;
+                render = true;
+ 
+                if(frameTime >= 1)
+                {
+                    printf("FPS: %i \n", FPS);
+                    frameTime = 0;
+                    FPS = frames;
+                    frames = 0;
+                }
+            }
+ 
+            if(render)
+            {
+                //render the scene
+                SDL_RenderClear(window.ren);
+                //render stuff
+                gameContainer.draw();
+                SDL_RenderCopy(window.ren, tex, null,null);
+                //
+                SDL_RenderPresent(window.ren);
+ 
+                frames ++;
+            }
+            else
+            {
+                printf("sleeping \n");
+                sleep(10);
+            }
+        }
+ 
+        SDL_DestroyTexture(tex);
+        gameContainer.stop();
+    }
+
+    stop : () -> void
+    {
+    }
+
+    draw : () -> void
+    {
+    }
+    
+    update : (dt : f32) -> void
+    {
+    }
+        
+} : gameContainer
+
+Window : struct
+{
+    win : SDL_Window* = null;
+    ren : SDL_Renderer* = null;
+
+    init : () -> bool
+    {
+        sdlwindow : SDL_Window* = SDL_CreateWindow("Explore", 100,100,640, 480, SDL_WINDOW_SHOWN);
+        if(sdlwindow == null)
+        {
+            printf("Error creating window");
+            SDL_Quit();
+            return false;
+        }
+        printf("SDL window created \n");
+  
+        sdlren : SDL_Renderer* = SDL_CreateRenderer(sdlwindow,-1, SDL_RENDERER_ACCELERATED); //| SDL_RENDERER_PRESENTVSYNC);
+        if(sdlren == null)
+        {
+            printf("Error creating renderer");
+            SDL_DestroyWindow(sdlwindow);
+            SDL_Quit();
+ 
+            return false;
+        }
+        printf("sdl renderer created \n");
+    
+        window.win = sdlwindow;
+        window.ren = sdlren;
+
+        return true;
+    }
+
+    delete : () -> void
+    {
+        SDL_DestroyWindow(window.win);
+        SDL_DestroyRenderer(window.ren);
+    }
+
+    
+    
+} : window
+
+loadTexture : (path : char*) -> SDL_Texture*
+{
+    img : SDL_Surface* = IMG_Load(path); 
+    if(img == null)
+    {
+        printf("coudnt load img\n");
+    }
+   
+    tex : SDL_Texture* = SDL_CreateTextureFromSurface(window.ren, img);
+    SDL_FreeSurface(img); 
+
+    if(tex == null)
+    {
+        printf("error creating texture\n");
+        return null;
+    }
+
+    return tex;
+}
