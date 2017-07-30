@@ -1,0 +1,42 @@
+include"pstd"
+local include"player"
+local include"gamestate"
+
+View : struct
+{
+    x : int = 0;
+    y : int = 0;
+
+    mx : int = 0;
+    my : int = 0;
+
+    destX : int = 0;
+    destY : int = 0;
+
+    dx : f64 = 0;
+    dy : f64 = 0;
+
+    factor : f32 = 10.0;
+
+    update : (dt : f32) -> void
+    {
+        //deltaX : f64 = view.destX - view.x - gameState.WIDTH/2 + player.w/2; 
+        //deltaY : f64 = view.destY - view.y - gameState.HEIGHT/2 + player.h/2;
+
+        view.x = player.x - gameState.WIDTH/2 + player.w/2;
+        view.y = player.y - gameState.HEIGHT/2 + player.h/2;
+    
+        view.mx = view.x + gameState.WIDTH/2;
+        view.my = view.y + gameState.HEIGHT/2;
+
+        /*if(deltaX >= 10 || deltaX <= 10 || deltaY >= 10 || deltaY <= 10)
+        {
+            view.dx += deltaX * dt * view.factor; 
+            view.dy += deltaY * dt * view.factor; 
+
+            view.x = (int)view.dx;
+            view.y = (int)view.dy;
+            printf("viewx: %i y: %i\n", view.x, view.y);
+        } */    
+    }
+} : view

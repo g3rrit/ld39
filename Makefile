@@ -12,7 +12,7 @@ PSRCS = $(shell find $(PSRC_DIRS) -name *.pear)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-SDLFLAGS = -Ilibs/sdl/Headers -lSDL2 -lSDL2_image
+SDLFLAGS = -Ilibs/sdl/Headers -lSDL2 -lSDL2_image -lSDL2_ttf
 
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP $(shell pkg-config -lSDL2_image --cflags --libs sdl2)
 

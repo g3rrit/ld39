@@ -3,6 +3,7 @@
 #include"stdint.h"
 #include"stdbool.h"
 #include"main.h"
+#include"view.h"
 bool __Sprite_init(Sprite* this,char* path,int32_t _x,int32_t _y,int32_t _w,int32_t _h);
 void __Sprite_draw(Sprite* this);
 void __Sprite_delete(Sprite* this);
@@ -25,7 +26,7 @@ void __Sprite_draw(Sprite* this)
 drawTexture(this->tex,this->x,this->y,this->w,this->h,this->angle);}
 void __Sprite_delete(Sprite* this)
 {
-free(this->tex);}
+SDL_DestroyTexture(this->tex);}
 Sprite* __new_Sprite()
 { 
 Sprite *this = malloc(sizeof(Sprite));
@@ -129,9 +130,11 @@ return this;
 } 
 void drawTexture(SDL_Texture* tex,int32_t _x,int32_t _y,int32_t _w,int32_t _h,double angle)
 {
+int xres = _x-view.x;
+int yres = _y-view.y;
 SDL_Rect tempRect;
-tempRect.x=_x;
-tempRect.y=_y;
+tempRect.x=xres;
+tempRect.y=yres;
 tempRect.w=_w;
 tempRect.h=_h;
 if(angle==0){

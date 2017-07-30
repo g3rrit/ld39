@@ -4,6 +4,8 @@
 #include"stdbool.h"
 #include"gfx.h"
 #include"input.h"
+#include"view.h"
+#include"fontmanager.h"
 void __GameContainer_start();
 void __GameContainer_stop();
 void __GameContainer_draw();
@@ -11,17 +13,18 @@ void __GameContainer_update(float dt);
 GameContainer gameContainer={.start=&__GameContainer_start,.stop=&__GameContainer_stop,.draw=&__GameContainer_draw,.update=&__GameContainer_update};
 bool __Window_init();
 void __Window_delete();
-Window window={.win=NULL,.ren=NULL,.init=&__Window_init,.delete=&__Window_delete};
+Window window={.win=NULL,.ren=NULL,.font=NULL,.init=&__Window_init,.delete=&__Window_delete};
 int main()
 {
 window.init();
 sceneManager.init();
 gameContainer.start();
+sceneManager.delete();
+window.delete();
 event.delete();
 return 0;}
 void __GameContainer_start()
 {
-SDL_Texture* tex = loadTexture("/../res/char/Sprite.bmp");
 SDL_Event sdlevent;
 bool quit = false;
 struct timeval currentTime;
@@ -35,6 +38,8 @@ int frames = 0;
 bool render = true;
 float frameCap = 1.0/30.0;
 int FPS = 0;
+fontManager.add("fpstxt","FPS:",gameState.WIDTH-100,5,60,15);
+fontManager.add("fpsnum","00",gameState.WIDTH-40,5,40,15);
 while(!quit){
 while(SDL_PollEvent(&sdlevent)){
 if(sdlevent.type==SDL_QUIT){
@@ -54,7 +59,9 @@ gameContainer.update((float)frameCap);
 unprocessedTime=unprocessedTime-frameCap;
 render=true;
 if(frameTime>=1){
-printf("FPS: %i \n",FPS);
+char fpsnum[12];
+snprintf(fpsnum,12,"%d",FPS);
+fontManager.setText("fpsnum",&fpsnum);
 frameTime=0;
 FPS=frames;
 frames=0;
@@ -70,7 +77,6 @@ render=false;
 usleep(10000);
 }
 }
-SDL_DestroyTexture(tex);
 gameContainer.stop();}
 void __GameContainer_stop()
 {
@@ -84,6 +90,7 @@ void __GameContainer_update(float dt)
 input.update(dt);
 gameState.dt=dt;
 sceneManager.update(dt);
+view.update(dt);
 event.dispatch("update",NULL);}
 GameContainer* __new_GameContainer()
 { 
@@ -109,7 +116,15 @@ if(SDL_Init(SDL_INIT_VIDEO)!=0){
 printf("error initing sdl\n");
 }
 printf("sdl inited\n");
-SDL_Window* sdlwindow = SDL_CreateWindow("Explore",100,100,640,480,SDL_WINDOW_SHOWN);
+TTF_Init();
+window.font=TTF_OpenFont("/../res/font/BitFont.ttf",30);
+if(!window.font){
+printf("error loading font\n");
+SDL_Quit();
+TTF_Quit();
+return false;
+}
+SDL_Window* sdlwindow = SDL_CreateWindow("Explore",100,100,gameState.WIDTH,gameState.HEIGHT,SDL_WINDOW_SHOWN);
 if(sdlwindow==NULL){
 printf("Error creating window");
 SDL_Quit();
@@ -129,13 +144,17 @@ window.ren=sdlren;
 return true;}
 void __Window_delete()
 {
+TTF_CloseFont(window.font);
+TTF_Quit();
 SDL_DestroyWindow(window.win);
-SDL_DestroyRenderer(window.ren);}
+SDL_DestroyRenderer(window.ren);
+SDL_Quit();}
 Window* __new_Window()
 { 
 Window *this = malloc(sizeof(Window));
 this->win = NULL; 
 this->ren = NULL; 
+this->font = NULL; 
 this->init = &__Window_init; 
 this->delete = &__Window_delete; 
 return this;
@@ -145,6 +164,7 @@ Window __crt_Window()
 Window this;
 this.win = NULL; 
 this.ren = NULL; 
+this.font = NULL; 
 this.init = &__Window_init; 
 this.delete = &__Window_delete; 
 return this;

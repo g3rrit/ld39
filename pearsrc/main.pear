@@ -5,6 +5,9 @@ include"gamestate"
 include"scenemanager"
 local include"gfx"
 local include"input"
+local include"view"
+include"SDL2/SDL_ttf"
+local include"fontmanager"
 
 main : () -> int 
 {
@@ -12,6 +15,8 @@ main : () -> int
     sceneManager.init();
     gameContainer.start();
 
+    sceneManager.delete();
+    window.delete();
     event.delete();
 
     return 0;
@@ -21,8 +26,6 @@ GameContainer : struct
 {
     start : () -> void 
     {
-        tex : SDL_Texture* = loadTexture("/../res/char/Sprite.bmp");
-
         //main loop
         sdlevent : SDL_Event;
         quit : bool = false;
@@ -41,6 +44,9 @@ GameContainer : struct
  
         frameCap : f32 = 1.0 / 30.0;
         FPS : int = 0;
+
+        fontManager.add("fpstxt", "FPS:", gameState.WIDTH - 100, 5, 60,15);
+        fontManager.add("fpsnum", "00", gameState.WIDTH - 40, 5, 40, 15);
  
         while(!quit)
         {
@@ -80,7 +86,11 @@ GameContainer : struct
  
                 if(frameTime >= 1)
                 {
-                    printf("FPS: %i \n", FPS);
+                    //printf("FPS: %i \n", FPS);
+                    fpsnum[12] : char; 
+                    //itoa(FPS, fpsnum, 10);
+                    snprintf(fpsnum, 12, "%d",FPS);
+                    fontManager.setText("fpsnum", &fpsnum);
                     frameTime = 0;
                     FPS = frames;
                     frames = 0;
@@ -93,7 +103,6 @@ GameContainer : struct
                 SDL_RenderClear(window.ren);
                 //render stuff
                 gameContainer.draw();
-                //SDL_RenderCopy(window.ren, tex, null,null);
                 //
                 SDL_RenderPresent(window.ren);
  
@@ -107,7 +116,7 @@ GameContainer : struct
 
         }
  
-        SDL_DestroyTexture(tex);
+        //SDL_DestroyTexture(tex);
         gameContainer.stop();
     }
 
@@ -127,6 +136,7 @@ GameContainer : struct
         input.update(dt);
         gameState.dt = dt;
         sceneManager.update(dt);
+        view.update(dt);
         event.dispatch("update",null);
     }
         
@@ -137,6 +147,8 @@ Window : struct
     win : SDL_Window* = null;
     ren : SDL_Renderer* = null;
 
+    font : TTF_Font* = null;
+
     init : () -> bool
     {
         if(SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -145,7 +157,18 @@ Window : struct
         }
         printf("sdl inited\n");
 
-        sdlwindow : SDL_Window* = SDL_CreateWindow("Explore", 100,100,640, 480, SDL_WINDOW_SHOWN);
+        TTF_Init();
+
+        window.font = TTF_OpenFont("/../res/font/BitFont.ttf",30);
+        if(!window.font)
+        {
+            printf("error loading font\n");
+            SDL_Quit();
+            TTF_Quit();
+            return false;
+        } 
+
+        sdlwindow : SDL_Window* = SDL_CreateWindow("Explore", 100,100,gameState.WIDTH, gameState.HEIGHT, SDL_WINDOW_SHOWN);
         if(sdlwindow == null)
         {
             printf("Error creating window");
@@ -173,8 +196,11 @@ Window : struct
 
     delete : () -> void
     {
+        TTF_CloseFont(window.font);
+        TTF_Quit();
         SDL_DestroyWindow(window.win);
         SDL_DestroyRenderer(window.ren);
+        SDL_Quit();
     }
 
     

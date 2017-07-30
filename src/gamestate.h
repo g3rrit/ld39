@@ -6,6 +6,8 @@
 typedef struct GameState GameState;
 GameState gameState;
 struct GameState {
+int WIDTH; 
+int HEIGHT; 
 float dt; 
 };
 GameState* __new_GameState();

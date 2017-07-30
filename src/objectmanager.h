@@ -10,6 +10,7 @@ struct ObjectManager {
 void (*init)(); 
 void (*update)(float dt); 
 void (*draw)(); 
+void (*delete)(); 
 };
 ObjectManager* __new_ObjectManager();
 ObjectManager __crt_ObjectManager();

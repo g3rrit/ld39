@@ -8,6 +8,7 @@
 #include"objectmanager.h"
 #include"gamestate.h"
 #include"scenemanager.h"
+#include"SDL2/SDL_ttf.h"
 typedef struct GameContainer GameContainer;
 GameContainer gameContainer;
 typedef struct Window Window;
@@ -24,6 +25,7 @@ GameContainer __crt_GameContainer();
 struct Window {
 SDL_Window* win; 
 SDL_Renderer* ren; 
+TTF_Font* font; 
 bool (*init)(); 
 void (*delete)(); 
 };

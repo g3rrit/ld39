@@ -107,6 +107,9 @@ PBody : struct
     vel : Vec2d* = new Vec2d();
     acc : Vec2d* = new Vec2d();
 
+    dx : f64 = 0;
+    dy : f64 = 0;
+
     force : Vec2d* = new Vec2d(); 
 
     update : (this : PBody*, dt : f32) -> void
@@ -121,8 +124,11 @@ PBody : struct
         this->vel->x += this->acc->x * dt;
         this->vel->y += this->acc->y * dt;
 
-        this->pos->x += this->vel->x * dt;
-        this->pos->y += this->vel->y * dt;
+        this->dx = this->vel->x * dt;
+        this->dy = this->vel->y * dt;
+
+        this->pos->x += this->dx;
+        this->pos->y += this->dy;
     }
 
     addForce : (this : PBody*, _force : Vec2d*) -> void

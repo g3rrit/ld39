@@ -36,6 +36,8 @@ int32_t mass;
 Vec2d* pos; 
 Vec2d* vel; 
 Vec2d* acc; 
+double dx; 
+double dy; 
 Vec2d* force; 
 void (*update)(PBody* this,float dt); 
 void (*addForce)(PBody* this,Vec2d* _force); 

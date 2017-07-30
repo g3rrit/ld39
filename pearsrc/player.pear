@@ -3,6 +3,7 @@ include"geometry"
 include"gfx"
 local include"input"
 local include"math"
+local include"view"
 
 Player : struct
 {
@@ -18,6 +19,8 @@ Player : struct
 
     x : int = 100;
     y : int = 100;
+    w : int = 32;
+    h : int = 32;
 
     init : () -> void
     {
@@ -26,7 +29,7 @@ Player : struct
         player.pbody->pos->x = player.x;
         player.pbody->pos->y = player.y;
         player.asprite = new ASprite();
-        if(!player.asprite->init(player.asprite, "/../res/ship/ship1.png",0,0,64,64))
+        if(!player.asprite->init(player.asprite, "/../res/ship/ship1.png",0,0,player.w,player.h))
             printf("couldnt init player asprite\n");
         if(!player.asprite->add(player.asprite, "/../res/ship/ship2.png"))
             printf("couldnt add sprite to player\n");
@@ -62,10 +65,13 @@ Player : struct
         player.pbody->update(player.pbody, dt);
         player.x = player.pbody->pos->x;
         player.y = player.pbody->pos->y;
-        player.asprite->x = player.x;
-        player.asprite->y = player.y;
+        player.asprite->x = player.x - player.w/2;
+        player.asprite->y = player.y - player.h/2;
         player.asprite->angle = player.rotation;
         player.asprite->update(player.asprite, dt);
+
+        view.destX = player.x;
+        view.destY = player.y;
     }
     
     draw : () -> void

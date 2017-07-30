@@ -1,0 +1,118 @@
+include"pstd"
+include"SDL2/SDL_ttf"
+local include"main"
+include"geometry"
+
+FontManager : struct 
+{
+    fontMap : Map* = null;
+
+    add : (id : char*, txt : char*, _x : int, _y : int, _w : int, _h : int) -> void
+    {
+        if(!fontManager.fontMap)
+            fontManager.fontMap = new Map();
+
+        appText : Text* = new Text();
+        appText->setText(appText, txt);
+        appText->pos->x = _x;
+        appText->pos->y = _y;
+        appText->w = _w;
+        appText->h = _h;
+        fontManager.fontMap->add(fontManager.fontMap, id , appText);
+    }
+
+    get : (id : char*) -> Text*
+    {
+        return fontManager.fontMap->get(fontManager.fontMap, id);
+    }
+
+    setText : (id : char*, txt : char*) -> void
+    {
+        tempTxt : Text* = fontManager.fontMap->get(fontManager.fontMap, id);
+        tempTxt->setText(tempTxt, txt);
+    }
+
+    remove : (id : char*) -> void
+    {
+        tempTxt : Text* = fontManager.fontMap->remove(fontManager.fontMap, id);
+        tempTxt->delete(tempTxt);
+        free(tempTxt);
+    }
+    
+    draw : () -> void
+    {
+        fontManager.fontMap->forEach(fontManager.fontMap, &__Text_draw);
+    }
+
+    delete : () -> void
+    {
+        fontManager.fontMap->forEach(fontManager.fontMap, &__Text_delete);
+        fontManager.fontMap->delete(fontManager.fontMap);
+        free(fontManager.fontMap);
+    }
+} : fontManager
+
+Text : struct
+{
+    txt : char* = 0;
+    
+    pos : Vec2* = new Vec2();
+    w : int = 100;
+    h : int = 10;
+
+    tex : SDL_Texture* = null;
+
+    setText : (this : Text*, txt : char*) -> void
+    {
+        if(this->tex)
+            SDL_DestroyTexture(this->tex);
+
+        if(this->txt && (strlen(this->txt) != strlen(txt)))
+        {
+            free(this->txt); 
+
+            this->txt = malloc(sizeof(char) * (strlen(txt) + 1));
+        }
+        else if(!this->txt)
+        {
+            this->txt = malloc(sizeof(char) * (strlen(txt) + 1));
+        }
+
+        strcpy(this->txt, txt);
+
+        color : SDL_Color;
+        color.r = 255;
+        color.g = 255;
+        color.b = 255;
+        color.a = 255;
+
+        surface : SDL_Surface* = TTF_RenderText_Solid(window.font, this->txt, color);
+        this->tex = SDL_CreateTextureFromSurface(window.ren, surface);
+        SDL_FreeSurface(surface);
+    }
+
+    draw : (this : Text*) ->bool
+    {
+        if(!this->tex)
+            return true;
+
+        tempRect : SDL_Rect; 
+        tempRect.x = this->pos->x;
+        tempRect.y = this->pos->y;
+        tempRect.w = this->w;
+        tempRect.h = this->h;
+
+        SDL_RenderCopy(window.ren, this->tex, null,&tempRect);
+
+        return true;
+    }
+
+    delete : (this : Text*) -> void
+    {
+        free(this->pos);
+        SDL_DestroyTexture(this->tex);
+        free(this->txt);
+    }
+}
+
+

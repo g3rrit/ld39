@@ -1,21 +1,34 @@
 include"pstd"
 local include"gameState"
 local include"player"
+local include"background"
+local include"fontmanager"
 
 ObjectManager : struct
 {
     init : () -> void
     { 
         player.init();
+        background.init();
     }
 
     update : (dt : f32) -> void
     {
         player.update(dt);
+        background.update(dt);
     }
        
     draw : () -> void
     {
+        background.draw();
         player.draw(); 
+        fontManager.draw();
+    }
+
+    delete : () -> void
+    {
+        background.delete();
+        player.delete();
+        fontManager.delete();
     }
 } : objectManager

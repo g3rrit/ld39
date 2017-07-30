@@ -1,0 +1,148 @@
+include"pstd"
+include"gfx"
+local include"gamestate"
+local include"view"
+local include"input"
+local include"math"
+local include"player"
+include"geometry"
+
+Background : struct
+{
+    starList : List* = null; 
+
+    count : int = 0;
+
+    init : () -> void
+    {
+        background.starList = new List();
+    }
+
+    update : (dt : f32) -> void
+    {
+        background.starList->forEach(background.starList, &updateStarForEach); 
+
+        if(input.key[SDL_SCANCODE_Q])
+            background.addStar();
+    }
+
+    draw : () -> void
+    {
+        background.starList->forEach(background.starList, &drawStarForEach);
+    }
+
+    addStar : () -> void
+    {
+        appStar : Star* = new Star();
+        appStar->init(appStar, background.count, view.mx  + rand() % gameState.WIDTH - gameState.WIDTH/2, view.my + rand() %gameState.HEIGHT - gameState.HEIGHT/2);
+        background.starList->add(background.starList, appStar);
+        background.count++;
+    }
+
+    delete : () -> void
+    {
+        background.starList->forEach(background.starList, &deleteStarForEach);
+        background.starList->delete(background.starList);
+        free(background.starList);
+    }
+
+} : background
+
+deleteStarForEach : (star : Star*) -> bool
+{
+    star->delete(star);
+    return true;
+}
+
+updateStarForEach : (star : Star*) -> bool
+{
+    star->update(star, gameState.dt);
+    return true;
+}
+
+drawStarForEach : (star : Star*) -> bool
+{
+    star->draw(star);
+    return true;
+}
+
+Star : struct
+{
+    sprite : Sprite* = null; 
+
+    distance : f32 = 0.5;
+
+    id : int = 0; 
+
+    pos : Vec2d* = null;
+    dist : Vec2d* = null;
+
+    init : (this : Star*, _id : int, _x : int, _y : int) -> void 
+    {
+        this->id = _id; 
+        this->sprite = new Sprite();
+        this->distance = (f32)rand()/(f32)(RAND_MAX/0.5) + 0.5;
+        this->pos = new Vec2d();
+        this->pos->x = _x;
+        this->pos->y = _y;
+        this->dist = new Vec2d();
+
+        if((this->id % 2) == 0)
+        {
+            this->sprite->init(this->sprite, "/../res/stars/s1.png", _x,_y,1,1);
+        }
+        else if((this->id % 3) == 0)
+        {
+            this->sprite->init(this->sprite, "/../res/stars/s4.png", _x,_y,4,4);
+        }
+        else
+        {
+            this->sprite->init(this->sprite, "/../res/stars/s3.png", _x,_y,3,3);
+        }
+    }
+
+    update : (this : Star*, dt : f32) -> void
+    {
+        /*
+        distX : int = abs(this->sprite->x - view.mx);
+        distY : int = abs(this->sprite->y - view.my);
+
+        if(distX > gameState.WIDTH || distY > gameState.HEIGHT)
+        { 
+            newX : int = view.mx + rand() %gameState.HEIGHT - gameState.HEIGHT/2;
+            newY : int = view.my  + rand() % gameState.WIDTH - gameState.WIDTH/2;
+
+            this->sprite->x = newX;
+            this->sprite->y = newY;
+        }*/
+
+        this->dist->x = this->pos->x - view.mx;
+        this->dist->y = this->pos->y - view.my;
+        
+        if(this->dist->length(this->dist) >= gameState.WIDTH)
+        {
+            this->dist->mul(this->dist, 0.7);
+            this->dist->rotate(this->dist, rand());
+            this->pos->x = view.mx + this->dist->x;
+            this->pos->y = view.my + this->dist->y;
+        }
+    
+
+        //printf("dx: %f dy: %f\n", player.pbody->dx, player.pbody->dy);
+        //this->sprite->x += (player.pbody->dx); //* this->distance;
+        //this->sprite->y += (player.pbody->dy); //* this->distance;
+        
+    }
+
+    draw : (this : Star*) -> void
+    {
+        this->sprite->draw(this->sprite); 
+    }
+
+    delete : (this : Star*) -> void
+    {
+        this->sprite->delete(this->sprite);
+        free(this->sprite);
+    }
+}
+

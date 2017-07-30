@@ -16,6 +16,8 @@ double rotationR;
 double vel; 
 int x; 
 int y; 
+int w; 
+int h; 
 void (*init)(); 
 void (*update)(float dt); 
 void (*draw)(); 
