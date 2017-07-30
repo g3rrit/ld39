@@ -3,8 +3,12 @@
 #include"stdlib.h"
 #include"stdint.h"
 #include"stdbool.h"
+#include"pstd.h"
 #include"SDL2/SDL.h"
 #include"SDL2/SDL_image.h"
+#include"objectmanager.h"
+#include"gamestate.h"
+#include"scenemanager.h"
 typedef struct GameContainer GameContainer;
 GameContainer gameContainer;
 typedef struct Window Window;

@@ -1,0 +1,115 @@
+include"pstd"
+
+Vec2 : struct
+{
+    x : i32 = 0;
+    y : i32 = 0;
+
+    add : (this : Vec2*, other : Vec2*) -> Vec2*
+    {
+        this->x += other->x;
+        this->y += other->y; 
+        return this;
+    }
+
+    sub : (this : Vec2*, other : Vec2*) -> Vec2*
+    {
+        this->x -= other->x;
+        this->y -= other->y;
+        return this;
+    }
+
+    mul : (this : Vec2*, factor : i32) -> Vec2*
+    {
+        this->x *= factor; 
+        this->y *= factor;
+        return this;
+    }
+
+    scalar : (this : Vec2*, other : Vec2*) -> i32
+    {
+        res : i32 = this->x * other->x + this->y * other->y; 
+        return res;
+    }
+}
+
+Vec2d : struct
+{
+    x : f64 = 0;
+    y : f64 = 0;
+
+    add : (this : Vec2d*, other : Vec2d*) -> Vec2d*
+    {
+        this->x += other->x;
+        this->y += other->y; 
+        return this;
+    }
+
+    sub : (this : Vec2d*, other : Vec2d*) -> Vec2d*
+    {
+        this->x -= other->x;
+        this->y -= other->y;
+        return this;
+    }
+
+    mul : (this : Vec2d*, factor : i32) -> Vec2d*
+    {
+        this->x *= factor; 
+        this->y *= factor;
+    }
+
+    scalar : (this : Vec2d*, other : Vec2d*) -> f64
+    {
+        res : f64 = this->x * other->x + this->y * other->y; 
+        return res;
+    }
+}
+
+PBody : struct
+{
+    mass : i32 = 1;
+
+    pos : Vec2d* = new Vec2d();
+    vel : Vec2d* = new Vec2d();
+    acc : Vec2d* = new Vec2d();
+
+    force : Vec2d* = new Vec2d(); 
+
+    update : (this : PBody*, dt : f32) -> void
+    {
+        this->force->mul(this->force, 1 / this->mass);
+        this->acc->x = this->force->x;
+        this->acc->y = this->force->y;
+
+        this->force->x = 0;
+        this->force->y = 0;
+
+        this->vel->x += this->acc->x * dt;
+        this->vel->y += this->acc->y * dt;
+
+        this->pos->x += this->vel->x * dt;
+        this->pos->y += this->vel->y * dt;
+    }
+
+    addForce : (this : PBody*, _force : Vec2d*) -> void
+    {
+        this->force->x += _force->x;
+        this->force->y += _force->y;
+    }
+
+    addForceXY : (this : PBody*, _x : i32, _y : i32) -> void
+    {
+        this->force->x = _x;
+        this->force->y = _y;
+    }
+
+    delete : (this : PBody*) -> void
+    {
+        free(this->pos);
+        free(this->vel);
+        free(this->acc);
+        free(this->force);
+    }
+}
+
+

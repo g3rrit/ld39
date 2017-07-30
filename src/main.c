@@ -12,7 +12,9 @@ void __Window_delete();
 Window window={.win=NULL,.ren=NULL,.init=&__Window_init,.delete=&__Window_delete};
 int main()
 {
+sceneManager.init();
 gameContainer.start();
+event.delete();
 return 0;}
 void __GameContainer_start()
 {
@@ -22,35 +24,36 @@ printf("error initing sdl\n");
 printf("sdl inited\n");
 window.init();
 SDL_Texture* tex = loadTexture("/../res/char/Sprite.bmp");
-SDL_Event event;
+SDL_Event sdlevent;
 bool quit = false;
 struct timeval currentTime;
 gettimeofday(&currentTime,NULL);
-double lastTime = (currentTime.tv_sec*1000000+currentTime.tv_usec)/1000000;
+double lastTime = (currentTime.tv_sec*1000000+currentTime.tv_usec)/1000000.0;
 double firstTime = 0;
-double passedTime = 0;
-double unprocessedTime = 0;
-double frameTime = 0;
+float passedTime = 0;
+float unprocessedTime = 0;
+float frameTime = 0;
 int frames = 0;
 bool render = true;
-double frameCap = 1.0/30.0;
+float frameCap = 1.0/30.0;
 int FPS = 0;
 while(!quit){
-while(SDL_PollEvent(&event)){
-if(event.type==SDL_QUIT){
+while(SDL_PollEvent(&sdlevent)){
+if(sdlevent.type==SDL_QUIT){
 quit=true;
-}else if(event.type==SDL_KEYDOWN){
+}else if(sdlevent.type==SDL_KEYDOWN){
 quit=true;
-}else if(event.type==SDL_MOUSEBUTTONDOWN){
+}else if(sdlevent.type==SDL_MOUSEBUTTONDOWN){
 quit=true;
 }
 }
 gettimeofday(&currentTime,NULL);
-firstTime=(currentTime.tv_sec*1000000+currentTime.tv_usec)/1000000;
+firstTime=(currentTime.tv_sec*1000000+currentTime.tv_usec)/1000000.0;
 passedTime=firstTime-lastTime;
 lastTime=firstTime;
-unprocessedTime=unprocessedTime+passedTime;
+unprocessedTime=unprocessedTime+(float)passedTime;
 frameTime=frameTime+passedTime;
+printf("unprocessed : %f , framecap : %f fps : %i \n",unprocessedTime,frameCap,FPS);
 while(unprocessedTime>=frameCap){
 gameContainer.update((float)frameCap);
 unprocessedTime=unprocessedTime-frameCap;
@@ -68,19 +71,25 @@ gameContainer.draw();
 SDL_RenderCopy(window.ren,tex,NULL,NULL);
 SDL_RenderPresent(window.ren);
 frames++;
+render=false;
 }else{
-printf("sleeping \n");
-sleep(10);
+usleep(10000);
 }
 }
 SDL_DestroyTexture(tex);
 gameContainer.stop();}
 void __GameContainer_stop()
-{}
+{
+event.dispatch("stop",NULL);}
 void __GameContainer_draw()
-{}
+{
+sceneManager.draw();
+event.dispatch("draw",NULL);}
 void __GameContainer_update(float dt)
-{}
+{
+gameState.dt=dt;
+sceneManager.update(dt);
+event.dispatch("update",NULL);}
 GameContainer* __new_GameContainer()
 { 
 GameContainer *this = malloc(sizeof(GameContainer));

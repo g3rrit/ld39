@@ -1,0 +1,66 @@
+include"pstd"
+local include"objectmanager"
+local include"gamestate"
+
+SceneManager : struct 
+{
+    activeScene : Scene* = &gameScene;
+
+    init : () -> void
+    {
+        sceneManager.activeScene->init();
+    }
+
+    update : (dt : f32) -> void
+    {
+        sceneManager.activeScene->update(dt);
+    }
+       
+    draw : () -> void
+    {
+        sceneManager.activeScene->draw();
+    }
+
+    add : (scene : Scene*) -> void
+    {
+        sceneManager.activeScene = scene; 
+        scene->init();
+    }
+} : sceneManager
+
+Scene : struct
+{
+    init : () -> void {}
+    update : (dt : f32) -> void {}
+    draw : () -> void {}
+    stop : () -> void {}
+}
+
+GameScene : struct
+{
+    init : () -> void
+    {
+        objectManager.init();
+        printf("starting gameScene\n");
+    }
+    
+    update : (dt : f32) -> void
+    {
+        objectManager.update(dt);
+    }
+    
+    draw : () -> void
+    {
+        objectManager.draw();
+    }
+
+    stop : () -> void
+    {
+    }
+    
+    pause : () -> void
+    {
+    }
+    
+} : gameScene
+

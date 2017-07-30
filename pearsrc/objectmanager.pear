@@ -1,0 +1,19 @@
+include"pstd"
+local include"gameState"
+
+ObjectManager : struct
+{
+    init : () -> void
+    { 
+    }
+
+    update : (dt : f32) -> void
+    {
+
+    }
+       
+    draw : () -> void
+    {
+    
+    }
+} : objectManager

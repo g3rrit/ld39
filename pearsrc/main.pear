@@ -1,9 +1,16 @@
+include"pstd"
 include"SDL2/SDL"
 include"SDL2/SDL_image"
+include"objectmanager"
+include"gamestate"
+include"scenemanager"
 
 main : () -> int 
 {
+    sceneManager.init();
     gameContainer.start();
+
+    event.delete();
 
     return 0;
 }
@@ -23,57 +30,58 @@ GameContainer : struct
         tex : SDL_Texture* = loadTexture("/../res/char/Sprite.bmp");
 
         //main loop
-        event : SDL_Event;
+        sdlevent : SDL_Event;
         quit : bool = false;
  
         //TODO check if this works
         currentTime : struct timeval;
         gettimeofday(&currentTime,null);
  
-        lastTime : f64 = (currentTime.tv_sec * 1000000 + currentTime.tv_usec) / 1000000;
+        lastTime : f64 = (currentTime.tv_sec * 1000000 + currentTime.tv_usec) / 1000000.0;
         firstTime : f64 = 0;
-        passedTime : f64 = 0;
-        unprocessedTime : f64 = 0;
-        frameTime : f64 = 0;
+        passedTime : f32 = 0;
+        unprocessedTime : f32 = 0;
+        frameTime : f32 = 0;
         frames : int = 0;
         render : bool = true;
  
-        frameCap : f64 = 1.0 / 30.0;
+        frameCap : f32 = 1.0 / 30.0;
         FPS : int = 0;
  
         while(!quit)
         {
             
-            while(SDL_PollEvent(&event))
+            while(SDL_PollEvent(&sdlevent))
             {
-                if(event.type == SDL_QUIT)
+                if(sdlevent.type == SDL_QUIT)
                 {
                     quit = true;
                 }
-                else if(event.type == SDL_KEYDOWN)
+                else if(sdlevent.type == SDL_KEYDOWN)
                 {
                     quit = true;
                 }
-                else if(event.type == SDL_MOUSEBUTTONDOWN)
+                else if(sdlevent.type == SDL_MOUSEBUTTONDOWN)
                 {
                     quit = true;
                 }
             } 
+
+
             
             gettimeofday(&currentTime,null);
-            firstTime = (currentTime.tv_sec * 1000000 + currentTime.tv_usec) / 1000000;
+            firstTime = (currentTime.tv_sec * 1000000 + currentTime.tv_usec) / 1000000.0;
             //printf("time = %f \n", firstTime);
             passedTime = firstTime - lastTime;
             lastTime = firstTime;
-  
-            unprocessedTime = unprocessedTime + passedTime;
+    
+            unprocessedTime = unprocessedTime + (f32)passedTime;
             frameTime = frameTime + passedTime;
   
-            //printf("unprocessed : %f , framecap : %f fps : %i \n", unprocessedTime, frameCap, FPS);
+            printf("unprocessed : %f , framecap : %f fps : %i \n", unprocessedTime, frameCap, FPS);
  
             while(unprocessedTime >= frameCap)
             {
-                //printf("whut \n");
                 gameContainer.update((f32)frameCap);
                 unprocessedTime = unprocessedTime - frameCap;
                 render = true;
@@ -98,12 +106,13 @@ GameContainer : struct
                 SDL_RenderPresent(window.ren);
  
                 frames ++;
+                render = false;
             }
             else
             {
-                printf("sleeping \n");
-                sleep(10);
+                usleep(10000);
             }
+
         }
  
         SDL_DestroyTexture(tex);
@@ -112,14 +121,20 @@ GameContainer : struct
 
     stop : () -> void
     {
+        event.dispatch("stop", null);
     }
 
     draw : () -> void
     {
+        sceneManager.draw();
+        event.dispatch("draw", null);
     }
     
     update : (dt : f32) -> void
     {
+        gameState.dt = dt;
+        sceneManager.update(dt);
+        event.dispatch("update",null);
     }
         
 } : gameContainer

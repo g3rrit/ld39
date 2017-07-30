@@ -1,0 +1,5 @@
+
+GameState : struct 
+{
+    dt : f32 = 0;
+} : gameState 
