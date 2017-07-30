@@ -1,12 +1,14 @@
 include"pstd"
 include"SDL2/SDL"
-include"SDL2/SDL_image"
 include"objectmanager"
 include"gamestate"
 include"scenemanager"
+local include"gfx"
+local include"input"
 
 main : () -> int 
 {
+    window.init();
     sceneManager.init();
     gameContainer.start();
 
@@ -19,14 +21,6 @@ GameContainer : struct
 {
     start : () -> void 
     {
-        if(SDL_Init(SDL_INIT_VIDEO) != 0)
-        {
-            printf("error initing sdl\n");
-        }
-        printf("sdl inited\n");
-
-        window.init();
-
         tex : SDL_Texture* = loadTexture("/../res/char/Sprite.bmp");
 
         //main loop
@@ -59,11 +53,9 @@ GameContainer : struct
                 }
                 else if(sdlevent.type == SDL_KEYDOWN)
                 {
-                    quit = true;
                 }
                 else if(sdlevent.type == SDL_MOUSEBUTTONDOWN)
                 {
-                    quit = true;
                 }
             } 
 
@@ -78,7 +70,7 @@ GameContainer : struct
             unprocessedTime = unprocessedTime + (f32)passedTime;
             frameTime = frameTime + passedTime;
   
-            printf("unprocessed : %f , framecap : %f fps : %i \n", unprocessedTime, frameCap, FPS);
+            //printf("unprocessed : %f , framecap : %f fps : %i \n", unprocessedTime, frameCap, FPS);
  
             while(unprocessedTime >= frameCap)
             {
@@ -101,7 +93,7 @@ GameContainer : struct
                 SDL_RenderClear(window.ren);
                 //render stuff
                 gameContainer.draw();
-                SDL_RenderCopy(window.ren, tex, null,null);
+                //SDL_RenderCopy(window.ren, tex, null,null);
                 //
                 SDL_RenderPresent(window.ren);
  
@@ -132,6 +124,7 @@ GameContainer : struct
     
     update : (dt : f32) -> void
     {
+        input.update(dt);
         gameState.dt = dt;
         sceneManager.update(dt);
         event.dispatch("update",null);
@@ -146,6 +139,12 @@ Window : struct
 
     init : () -> bool
     {
+        if(SDL_Init(SDL_INIT_VIDEO) != 0)
+        {
+            printf("error initing sdl\n");
+        }
+        printf("sdl inited\n");
+
         sdlwindow : SDL_Window* = SDL_CreateWindow("Explore", 100,100,640, 480, SDL_WINDOW_SHOWN);
         if(sdlwindow == null)
         {
@@ -182,22 +181,4 @@ Window : struct
     
 } : window
 
-loadTexture : (path : char*) -> SDL_Texture*
-{
-    img : SDL_Surface* = IMG_Load(path); 
-    if(img == null)
-    {
-        printf("coudnt load img\n");
-    }
-   
-    tex : SDL_Texture* = SDL_CreateTextureFromSurface(window.ren, img);
-    SDL_FreeSurface(img); 
 
-    if(tex == null)
-    {
-        printf("error creating texture\n");
-        return null;
-    }
-
-    return tex;
-}

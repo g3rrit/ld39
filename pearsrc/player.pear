@@ -1,0 +1,84 @@
+local include"pstd"
+include"geometry"
+include"gfx"
+local include"input"
+local include"math"
+
+Player : struct
+{
+    pbody : PBody* = null;
+
+    asprite : ASprite* = null;
+
+    normal : Vec2d* = null;
+    rotation : f64 = 0;
+    rotationR : f64 = 0;
+
+    vel : f64 = 100.0;
+
+    x : int = 100;
+    y : int = 100;
+
+    init : () -> void
+    {
+        player.normal = new Vec2d();
+        player.pbody = new PBody(); 
+        player.pbody->pos->x = player.x;
+        player.pbody->pos->y = player.y;
+        player.asprite = new ASprite();
+        if(!player.asprite->init(player.asprite, "/../res/ship/ship1.png",0,0,64,64))
+            printf("couldnt init player asprite\n");
+        if(!player.asprite->add(player.asprite, "/../res/ship/ship2.png"))
+            printf("couldnt add sprite to player\n");
+    }
+
+    update : (dt : f32) -> void
+    {
+        //player.normal->x = 0;//(f64)(input.mouseX - player.x);
+        //player.normal->y = -1;//(f64)(input.mouseY - player.y); 
+        //player.normal->mul(player.normal, 100.0 / player.normal->length(player.normal));
+
+        if(input.key[SDL_SCANCODE_W])
+        {
+            player.pbody->addForce(player.pbody, player.normal);             
+        }
+        if(input.key[SDL_SCANCODE_A])
+        {
+            player.rotation -= (f64)dt * 100;
+            player.rotationR = toRad(player.rotation);
+            //player.normal->rotate(player.normal, toRad(player.rotation));
+            player.normal->x = sin(-player.rotationR - M_PI) * player.vel;
+            player.normal->y = cos(-player.rotationR - M_PI) * player.vel;
+        }
+        if(input.key[SDL_SCANCODE_D])
+        {
+            player.rotation += (f64)dt * 100;
+            player.rotationR = toRad(player.rotation);
+            //player.normal->rotate(player.normal, toRad(player.rotation));
+            player.normal->x = sin(-player.rotationR - M_PI) * player.vel;
+            player.normal->y = cos(-player.rotationR - M_PI) * player.vel;
+        }
+    
+        player.pbody->update(player.pbody, dt);
+        player.x = player.pbody->pos->x;
+        player.y = player.pbody->pos->y;
+        player.asprite->x = player.x;
+        player.asprite->y = player.y;
+        player.asprite->angle = player.rotation;
+        player.asprite->update(player.asprite, dt);
+    }
+    
+    draw : () -> void
+    {
+        player.asprite->draw(player.asprite);
+    }
+
+    delete : () -> void 
+    {
+        free(player.normal);
+        player.asprite->delete(player.asprite); 
+        free(player.asprite);
+        player.pbody->delete(player.pbody);
+        free(player.pbody);
+    }
+} : player

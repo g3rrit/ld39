@@ -1,0 +1,29 @@
+include"pstd"
+local include"SDL2/SDL"
+
+Input : struct
+{
+    mouseX : int = 0;  
+    mouseY : int = 0;
+
+    key: u8*;
+
+    W : bool = false;
+
+    update : (dt : f32) -> void
+    {
+        input.key= SDL_GetKeyboardState(null);
+        SDL_GetMouseState(&input.mouseX, &input.mouseY);
+
+        //check keys
+        if(input.key[SDL_SCANCODE_UP])
+        {
+            input.W = true;
+        } 
+        else
+        {
+            input.W = false;
+        }
+    }
+
+} : input

@@ -2,6 +2,8 @@
 #include"stdlib.h"
 #include"stdint.h"
 #include"stdbool.h"
+#include"gfx.h"
+#include"input.h"
 void __GameContainer_start();
 void __GameContainer_stop();
 void __GameContainer_draw();
@@ -12,17 +14,13 @@ void __Window_delete();
 Window window={.win=NULL,.ren=NULL,.init=&__Window_init,.delete=&__Window_delete};
 int main()
 {
+window.init();
 sceneManager.init();
 gameContainer.start();
 event.delete();
 return 0;}
 void __GameContainer_start()
 {
-if(SDL_Init(SDL_INIT_VIDEO)!=0){
-printf("error initing sdl\n");
-}
-printf("sdl inited\n");
-window.init();
 SDL_Texture* tex = loadTexture("/../res/char/Sprite.bmp");
 SDL_Event sdlevent;
 bool quit = false;
@@ -42,9 +40,7 @@ while(SDL_PollEvent(&sdlevent)){
 if(sdlevent.type==SDL_QUIT){
 quit=true;
 }else if(sdlevent.type==SDL_KEYDOWN){
-quit=true;
 }else if(sdlevent.type==SDL_MOUSEBUTTONDOWN){
-quit=true;
 }
 }
 gettimeofday(&currentTime,NULL);
@@ -53,7 +49,6 @@ passedTime=firstTime-lastTime;
 lastTime=firstTime;
 unprocessedTime=unprocessedTime+(float)passedTime;
 frameTime=frameTime+passedTime;
-printf("unprocessed : %f , framecap : %f fps : %i \n",unprocessedTime,frameCap,FPS);
 while(unprocessedTime>=frameCap){
 gameContainer.update((float)frameCap);
 unprocessedTime=unprocessedTime-frameCap;
@@ -68,7 +63,6 @@ frames=0;
 if(render){
 SDL_RenderClear(window.ren);
 gameContainer.draw();
-SDL_RenderCopy(window.ren,tex,NULL,NULL);
 SDL_RenderPresent(window.ren);
 frames++;
 render=false;
@@ -87,6 +81,7 @@ sceneManager.draw();
 event.dispatch("draw",NULL);}
 void __GameContainer_update(float dt)
 {
+input.update(dt);
 gameState.dt=dt;
 sceneManager.update(dt);
 event.dispatch("update",NULL);}
@@ -110,6 +105,10 @@ return this;
 } 
 bool __Window_init()
 {
+if(SDL_Init(SDL_INIT_VIDEO)!=0){
+printf("error initing sdl\n");
+}
+printf("sdl inited\n");
 SDL_Window* sdlwindow = SDL_CreateWindow("Explore",100,100,640,480,SDL_WINDOW_SHOWN);
 if(sdlwindow==NULL){
 printf("Error creating window");
@@ -150,16 +149,3 @@ this.init = &__Window_init;
 this.delete = &__Window_delete; 
 return this;
 } 
-SDL_Texture* loadTexture(char* path)
-{
-SDL_Surface* img = IMG_Load(path);
-if(img==NULL){
-printf("coudnt load img\n");
-}
-SDL_Texture* tex = SDL_CreateTextureFromSurface(window.ren,img);
-SDL_FreeSurface(img);
-if(tex==NULL){
-printf("error creating texture\n");
-return NULL;
-}
-return tex;}

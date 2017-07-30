@@ -1,19 +1,21 @@
 include"pstd"
 local include"gameState"
+local include"player"
 
 ObjectManager : struct
 {
     init : () -> void
     { 
+        player.init();
     }
 
     update : (dt : f32) -> void
     {
-
+        player.update(dt);
     }
        
     draw : () -> void
     {
-    
+        player.draw(); 
     }
 } : objectManager

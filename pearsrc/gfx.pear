@@ -1,0 +1,151 @@
+include"pstd"
+include"SDL2/SDL"
+include"SDL2/SDL_image"
+local include"main"
+
+//TODO free textures
+
+Sprite : struct
+{
+    x : i32 = 0;
+    y : i32 = 0;
+    w : i32 = 0;
+    h : i32 = 0;
+    
+    angle : f64 = 0;
+
+    tex : SDL_Texture* = null;
+
+    init : (this : Sprite*, path : char*, _x : i32, _y : i32, _w : i32, _h : i32) -> bool
+    {
+        this->tex = loadTexture(path); 
+
+        if(!this->tex)
+            return false;
+
+        this->x = _x; 
+        this->y = _y; 
+        this->w = _w; 
+        this->h = _h; 
+        
+        return true;
+    }
+
+    draw : (this : Sprite*) -> void
+    {
+        drawTexture(this->tex, this->x, this->y, this->w, this->h, this->angle);
+    }
+
+    delete : (this : Sprite*) -> void
+    {
+        free(this->tex);
+    }
+}
+
+ASprite : struct
+{
+    x : i32 = 0;
+    y : i32 = 0;
+    w : i32 = 0;
+    h : i32 = 0;
+
+    angle : f64 = 0;
+
+    frameTime : f32 = 0.1;
+    timePassed : f32 = 0;
+    activeFrame : int = 0;
+
+    texList : List* = null;
+
+    activeTex : SDL_Texture* = null;
+
+    init : (this : ASprite*, path : char*, _x : i32, _y : i32, _w : i32, _h : i32) -> bool
+    {
+        this->activeTex = loadTexture(path);
+        if(!this->activeTex)
+            return false;
+
+        this->texList = new List();
+        this->texList->add(this->texList, this->activeTex);
+
+        this->x = _x; 
+        this->y = _y; 
+        this->w = _w; 
+        this->h = _h; 
+    
+        return true;
+    }
+
+    add : (this : ASprite*, path : char*) -> bool
+    {
+        tempTex : SDL_Texture* = loadTexture(path);
+        if(!tempTex)
+            return false;
+
+        this->texList->add(this->texList, tempTex);
+    
+        return true;
+    }
+
+    update : (this : ASprite*, dt : f32) -> void
+    {
+        this->timePassed += dt;
+        if(this->timePassed >= this->frameTime)
+        {
+            this->timePassed -= this->frameTime;
+            this->activeFrame++;
+            if(this->activeFrame >= this->texList->size)
+                this->activeFrame = 0;
+            this->activeTex = this->texList->get(this->texList, this->activeFrame);
+        } 
+    }
+
+    draw : (this : ASprite*) -> void
+    {
+        drawTexture(this->activeTex, this->x, this->y, this->w, this->h, this->angle);
+    }
+
+    delete : (this : ASprite*) -> void
+    {
+        this->texList->delete(this->texList);
+        free(this->texList);
+    }
+}
+
+drawTexture : (tex : SDL_Texture*, _x : i32, _y : i32, _w : i32, _h : i32, angle : f64) -> void
+{
+    tempRect : SDL_Rect; 
+    tempRect.x = _x;
+    tempRect.y = _y;
+    tempRect.w = _w;
+    tempRect.h = _h;
+    
+    if(angle == 0)
+    {
+        SDL_RenderCopy(window.ren, tex, null,&tempRect);
+    }
+    else
+    {
+        SDL_RenderCopyEx(window.ren, tex, null,&tempRect, angle, null, null);
+    }
+}
+
+loadTexture : (path : char*) -> SDL_Texture*
+{
+    img : SDL_Surface* = IMG_Load(path); 
+    if(img == null)
+    {
+        printf("coudnt load img\n");
+    }
+   
+    tex : SDL_Texture* = SDL_CreateTextureFromSurface(window.ren, img);
+    SDL_FreeSurface(img); 
+
+    if(tex == null)
+    {
+        printf("error creating texture\n");
+        return null;
+    }
+
+    return tex;
+}

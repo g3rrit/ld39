@@ -5,7 +5,6 @@
 #include"stdbool.h"
 #include"pstd.h"
 #include"SDL2/SDL.h"
-#include"SDL2/SDL_image.h"
 #include"objectmanager.h"
 #include"gamestate.h"
 #include"scenemanager.h"
@@ -30,5 +29,4 @@ void (*delete)();
 };
 Window* __new_Window();
 Window __crt_Window();
-SDL_Texture* loadTexture(char* path);
 #endif
