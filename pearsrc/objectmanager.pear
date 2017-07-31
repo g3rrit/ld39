@@ -1,21 +1,36 @@
 include"pstd"
 local include"gameState"
-local include"player"
+include"player"
 local include"background"
 local include"fontmanager"
+include"geometry"
 
 ObjectManager : struct
 {
+    objectMap : Map*;
+
     init : () -> void
     { 
+        objectManager.objectMap = new Map();
         player.init();
         background.init();
+    }
+
+    addObject : (gobject : GameObject*, id : char*) -> void
+    {
+        objectManager.objectMap->add(objectManager.objectMap, id, gobject);
+    }
+
+    removeObject : (id : char*) -> void
+    {
+        objectManager.objectMap->remove(objectManager.objectMap, id);
     }
 
     update : (dt : f32) -> void
     {
         player.update(dt);
         background.update(dt);
+        objectManager.objectMap->forEach(objectManager.objectMap, &updateGameObjectForEach);
     }
        
     draw : () -> void
@@ -23,12 +38,44 @@ ObjectManager : struct
         background.draw();
         player.draw(); 
         fontManager.draw();
+        objectManager.objectMap->forEach(objectManager.objectMap, &drawGameObjectForEach);
     }
 
     delete : () -> void
     {
+        objectManager.objectMap->forEach(objectManager.objectMap, &deleteGameObjectForEach);
+        objectManager.objectMap->delete(objectManager.objectMap);
+        free(objectManager.objectMap);
         background.delete();
         player.delete();
         fontManager.delete();
     }
 } : objectManager
+
+updateGameObjectForEach : (this : Bullet*) -> bool
+{
+    this->update(this, gameState.dt);
+    return true;
+}
+
+drawGameObjectForEach : (this : Bullet*) -> bool
+{
+    this->draw(this);
+    return true;
+}
+
+deleteGameObjectForEach : (this : Bullet*) -> bool
+{
+    this->delete(this);
+    return true;
+}
+
+//TODO this type of inheritance doesnt work bus error!
+
+GameObject : struct
+{
+    pos : Vec2d*;
+    update : (this : GameObject*, dt : f32) -> void {}
+    draw : (this : GameObject*) -> void {} 
+    delete : (this : GameObject*) -> void {}
+}

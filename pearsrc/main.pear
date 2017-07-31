@@ -65,8 +65,6 @@ GameContainer : struct
                 }
             } 
 
-
-            
             gettimeofday(&currentTime,null);
             firstTime = (currentTime.tv_sec * 1000000 + currentTime.tv_usec) / 1000000.0;
             //printf("time = %f \n", firstTime);
@@ -208,3 +206,21 @@ Window : struct
 } : window
 
 
+randStr : (length : u32) -> char*
+{
+    charset[] : char = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    res : char* = malloc(sizeof(char) * (length));
+
+    res[length-1] = '\0';
+    length--;
+
+    while(length > 0)
+    {
+        index : u32 = (f64)rand()/RAND_MAX * (sizeof(charset) - 1); 
+        res[length-1] = charset[index];
+        length--;
+    } 
+    printf("random string: %s\n", res);
+    return res;
+}

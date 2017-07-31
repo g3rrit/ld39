@@ -16,6 +16,10 @@ Background : struct
     init : () -> void
     {
         background.starList = new List();
+        for(i : int = 0; i < 30; i++)
+        {
+            background.addStar();
+        }
     }
 
     update : (dt : f32) -> void
@@ -116,7 +120,7 @@ Star : struct
             this->sprite->y = newY;
         }*/
 
-        this->dist->x = this->pos->x - view.mx;
+        /*this->dist->x = this->pos->x - view.mx;
         this->dist->y = this->pos->y - view.my;
         
         if(this->dist->length(this->dist) >= gameState.WIDTH)
@@ -125,7 +129,7 @@ Star : struct
             this->dist->rotate(this->dist, rand());
             this->pos->x = view.mx + this->dist->x;
             this->pos->y = view.my + this->dist->y;
-        }
+        }*/
     
 
         //printf("dx: %f dy: %f\n", player.pbody->dx, player.pbody->dy);

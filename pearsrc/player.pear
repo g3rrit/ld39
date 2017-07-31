@@ -4,6 +4,8 @@ include"gfx"
 local include"input"
 local include"math"
 local include"view"
+include"energy"
+local include"objectmanager"
 
 Player : struct
 {
@@ -22,6 +24,8 @@ Player : struct
     w : int = 32;
     h : int = 32;
 
+    energy : Energy* = null;
+
     init : () -> void
     {
         player.normal = new Vec2d();
@@ -33,6 +37,9 @@ Player : struct
             printf("couldnt init player asprite\n");
         if(!player.asprite->add(player.asprite, "/../res/ship/ship2.png"))
             printf("couldnt add sprite to player\n");
+
+        player.energy = new Energy();
+        player.energy->init(player.energy);
     }
 
     update : (dt : f32) -> void
@@ -40,7 +47,25 @@ Player : struct
         //player.normal->x = 0;//(f64)(input.mouseX - player.x);
         //player.normal->y = -1;//(f64)(input.mouseY - player.y); 
         //player.normal->mul(player.normal, 100.0 / player.normal->length(player.normal));
+    
+        player.processInput(dt);
 
+        player.pbody->update(player.pbody, dt);
+        player.x = player.pbody->pos->x;
+        player.y = player.pbody->pos->y;
+        player.asprite->x = player.x - player.w/2;
+        player.asprite->y = player.y - player.h/2;
+        player.asprite->angle = player.rotation;
+        player.asprite->update(player.asprite, dt);
+
+        view.destX = player.x;
+        view.destY = player.y;
+
+        player.energy->update(player.energy, dt);
+    }
+    
+    processInput : (dt : f32) -> void
+    {
         if(input.key[SDL_SCANCODE_W])
         {
             player.pbody->addForce(player.pbody, player.normal);             
@@ -61,22 +86,17 @@ Player : struct
             player.normal->x = sin(-player.rotationR - M_PI) * player.vel;
             player.normal->y = cos(-player.rotationR - M_PI) * player.vel;
         }
-    
-        player.pbody->update(player.pbody, dt);
-        player.x = player.pbody->pos->x;
-        player.y = player.pbody->pos->y;
-        player.asprite->x = player.x - player.w/2;
-        player.asprite->y = player.y - player.h/2;
-        player.asprite->angle = player.rotation;
-        player.asprite->update(player.asprite, dt);
-
-        view.destX = player.x;
-        view.destY = player.y;
+        if(input.key[SDL_SCANCODE_SPACE])
+        {
+            appBullet : Bullet* = new Bullet();
+            appBullet->init(appBullet, player.x, player.y, player.normal->x, player.normal->y, player.rotation);
+        }
     }
     
     draw : () -> void
     {
         player.asprite->draw(player.asprite);
+        player.energy->draw(player.energy);
     }
 
     delete : () -> void 
@@ -86,5 +106,69 @@ Player : struct
         free(player.asprite);
         player.pbody->delete(player.pbody);
         free(player.pbody);
+        player.energy->delete(player.energy);
+        free(player.energy);
     }
 } : player
+
+
+Bullet : struct
+{
+    sprite : Sprite* = null;     
+
+    pos : Vec2d* = new Vec2d();
+
+    dir : Vec2d* = new Vec2d();
+
+    lifeTime : f64 = 5;
+    time : f64 = 0;
+
+    id : char*;
+
+    init : (this : Bullet*,  _x : f64, _y : f64, xd : f64, yd : f64, _angle : f64) -> void
+    {
+        this->id = randStr(20);
+        this->pos->x = _x;
+        this->pos->y = _y;
+        this->dir->x = xd;
+        this->dir->y = yd;
+        this->sprite = new Sprite();
+        this->sprite->init(this->sprite, "/../res/ship/shot.png", _x, _y, 2, 4);
+        this->sprite->angle = _angle;
+
+        objectManager.addObject(this, this->id);
+    }
+
+    update : (this: Bullet*, dt : f32) -> void
+    {
+        this->pos->x = this->dir->x * dt; 
+        this->pos->y = this->dir->y * dt;
+
+        this->sprite->x = this->pos->x;
+        this->sprite->y = this->pos->y;
+
+        this->time += dt;
+        if(this->time >= this->lifeTime)
+        {
+            this->delete(this);
+            //free(this);
+        }
+    }
+
+    draw : (this : Bullet*) -> void
+    {
+        this->sprite->draw(this->sprite);
+    }
+
+    delete : (this : Bullet*) -> void
+    {
+        this->sprite->delete(this->sprite);
+        free(this->sprite);
+        free(this->pos);
+        free(this->dir);
+        tempID : char* = this->id;
+        objectManager.removeObject(this->id);
+        free(tempID);
+    }
+}
+

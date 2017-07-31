@@ -31,4 +31,5 @@ void (*delete)();
 };
 Window* __new_Window();
 Window __crt_Window();
+char* randStr(uint32_t length);
 #endif

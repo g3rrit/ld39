@@ -1,0 +1,59 @@
+include"pstd"
+local include"main"
+include"SDL2/SDL"
+
+Energy: struct
+{
+    maxEnergy : int = 100;
+    currentEnergy : int = 100;
+    displayEnergy : f64 = 100;
+
+    displayR : SDL_Rect; 
+    rect : SDL_Rect;
+    maxWidth : int;
+        
+    init : (this : Energy*) -> void
+    {
+        this->displayR.x = 15;
+        this->displayR.y = gameState.HEIGHT - 30;
+        this->displayR.w = gameState.WIDTH - 30;
+        this->displayR.h = 20;
+
+        this->rect.x = 17;
+        this->rect.y = gameState.HEIGHT - 28;
+        this->rect.w = gameState.WIDTH - 34;
+        this->rect.h = 16;
+
+        this->maxWidth = gameState.WIDTH - 34;
+    }
+
+    update : (this : Energy*, dt : f32) -> void
+    {
+        delta : f64 = (this->displayEnergy - (f64)this->currentEnergy) * dt; 
+        if(delta <= 5)
+        {
+            this->displayEnergy = (f64)this->currentEnergy;
+        }
+        else
+        {
+            this->displayEnergy -= delta;
+        }
+
+        this->rect.w = ((int)this->displayEnergy / this->maxEnergy) * this->maxWidth;
+    }
+    
+    draw : (this : Energy*) -> void
+    {
+        SDL_SetRenderDrawColor(window.ren, 255,255,255,255); 
+        SDL_RenderDrawRect(window.ren, &this->displayR);
+        SDL_SetRenderDrawColor(window.ren, 0,255,0,255); 
+        SDL_RenderFillRect(window.ren, &this->rect);
+        SDL_SetRenderDrawColor(window.ren, 0,0,0,255); 
+    }
+    
+    delete : (this : Energy*) -> void
+    {
+        
+    } 
+}
+

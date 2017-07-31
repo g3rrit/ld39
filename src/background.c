@@ -19,7 +19,10 @@ void __Star_draw(Star* this);
 void __Star_delete(Star* this);
 void __Background_init()
 {
-background.starList=__new_List();}
+background.starList=__new_List();
+for(int i = 0;i<30;i++){
+background.addStar();
+}}
 void __Background_update(float dt)
 {
 background.starList->forEach(background.starList,&updateStarForEach);
@@ -91,15 +94,7 @@ this->sprite->init(this->sprite,"/../res/stars/s4.png",_x,_y,4,4);
 this->sprite->init(this->sprite,"/../res/stars/s3.png",_x,_y,3,3);
 }}
 void __Star_update(Star* this,float dt)
-{
-this->dist->x=this->pos->x-view.mx;
-this->dist->y=this->pos->y-view.my;
-if(this->dist->length(this->dist)>=gameState.WIDTH){
-this->dist->mul(this->dist,0.7);
-this->dist->rotate(this->dist,rand());
-this->pos->x=view.mx+this->dist->x;
-this->pos->y=view.my+this->dist->y;
-}}
+{}
 void __Star_draw(Star* this)
 {
 this->sprite->draw(this->sprite);}

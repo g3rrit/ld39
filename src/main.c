@@ -169,3 +169,16 @@ this.init = &__Window_init;
 this.delete = &__Window_delete; 
 return this;
 } 
+char* randStr(uint32_t length)
+{
+char charset[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+char* res = malloc(sizeof(char)*(length));
+res[length-1]=0;
+length--;
+while(length>0){
+uint32_t index = (double)rand()/RAND_MAX*(sizeof(charset)-1);
+res[length-1]=charset[index];
+length--;
+}
+printf("random string: %s\n",res);
+return res;}
